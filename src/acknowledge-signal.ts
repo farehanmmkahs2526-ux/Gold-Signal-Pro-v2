@@ -1,0 +1,3 @@
+import { z } from 'zod'; import { allowMethod,error,json,rateLimit } from './_shared/http'; import { db } from './_shared/db'
+const schema=z.object({id:z.string().min(4).max(120)})
+export default async(req:Request)=>{const m=allowMethod(req,['POST']);if(m)return m;if(rateLimit(req,30))return error('Rate limit exceeded',429);try{const {id}=schema.parse(await req.json());const sql=db();const r=await sql`update signals set acknowledged_at=coalesce(acknowledged_at,now()) where id=${id} returning acknowledged_at as "acknowledgedAt"`;if(!r[0])return error('Signal not found',404);return json({ok:true,...r[0]})}catch(e:any){return error('Unable to acknowledge signal',400,e?.message)}}
