@@ -1,0 +1,50 @@
+GOLD SIGNAL PRO — NETLIFY DEPLOY (WINDOWS)
+==========================================
+
+IMPORTANT
+Gold Signal Pro is not a static-only website. It uses Netlify Functions, Scheduled Functions,
+Netlify Database, Netlify Blobs and Web Push. Do NOT upload only the dist folder to Netlify Drop.
+
+EASIEST METHOD — GITHUB + NETLIFY
+1. Extract gold-signal-pro.zip.
+2. Create a new private GitHub repository.
+3. Upload all files/folders from gold-signal-pro into that repository.
+4. Open Netlify -> Add new project -> Import an existing project.
+5. Select your GitHub repository.
+6. Netlify will read netlify.toml automatically.
+7. In Netlify Project configuration -> Environment variables, add the variables from .env.example.
+8. Configure a real MARKET_DATA_API_KEY (Twelve Data adapter is included).
+9. Generate VAPID keys with: npx web-push generate-vapid-keys
+10. Add VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT.
+11. In the Netlify site's Database page, verify Netlify Database is enabled/provisioned.
+12. Deploy the production branch.
+13. Open https://YOUR-SITE/api/health and verify marketDataConfigured=true and pushConfigured=true.
+
+CLI METHOD
+1. Install Node.js 22.
+2. Open PowerShell in the extracted gold-signal-pro folder.
+3. Run:
+
+   npm install
+   npx netlify login
+   npx netlify init
+   npx netlify database init
+   npx netlify dev
+
+4. Configure the environment variables.
+5. Test locally, then run:
+
+   npm test
+   npm run build
+   npx netlify deploy --build --prod
+
+REQUIRED MARKET VARIABLES
+MARKET_DATA_PROVIDER=twelvedata
+MARKET_DATA_API_KEY=YOUR_KEY
+MARKET_DATA_BASE_URL=https://api.twelvedata.com
+XAUUSD_SYMBOL=XAU/USD
+APP_TIMEZONE=Asia/Kuala_Lumpur
+FOREX_FACTORY_FEED_URL=https://nfs.faireconomy.media/ff_calendar_thisweek.xml
+FOREX_FACTORY_SOURCE_TIMEZONE=America/New_York
+
+The website intentionally shows NOT CONFIGURED instead of fake market data until a valid provider key is added.
