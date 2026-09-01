@@ -1,7 +1,7 @@
 import type { Candle, IndicatorSnapshot, NewsRisk, SignalMode, SignalResult, Timeframe, TimeframeAnalysis, Trend } from '../types'
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
-const last = <T,>(a: T[]) => a[a.length - 1]
+const last = <T,>(a: T[]) => a[a.length - 1] as T
 const avg = (a: number[]) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0
 const std = (a: number[]) => {
   const m = avg(a)
