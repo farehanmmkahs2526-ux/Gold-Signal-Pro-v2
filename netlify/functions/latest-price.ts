@@ -1,0 +1,2 @@
+import { error,json,rateLimit } from './_shared/http'; import { getLatestQuote } from './_shared/market'
+export default async(req:Request)=>{if(rateLimit(req,180))return error('Rate limit exceeded',429);try{return json({ok:true,...await getLatestQuote()})}catch(e:any){if(e?.message==='NOT_CONFIGURED')return json({ok:false,configured:false,status:'DISCONNECTED',message:'Live XAU/USD data is not configured. Add the required API credentials in Netlify Environment Variables.'},503);return error('Unable to retrieve latest XAU/USD price',502,e?.message)}}
