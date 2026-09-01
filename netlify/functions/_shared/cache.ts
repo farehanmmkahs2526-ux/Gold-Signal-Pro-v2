@@ -1,25 +1,41 @@
-const memory = new Map<string, { value: unknown; expires: number }>()
+const memoryCache = new Map<string, {
+  value: unknown
+  expires: number
+}>()
 
 export function cacheGet(key: string) {
-  const item = memory.get(key)
+  const item = memoryCache.get(key)
 
-  if (!item) return undefined
+  if (!item) {
+    return undefined
+  }
 
   if (Date.now() > item.expires) {
-    memory.delete(key)
+    memoryCache.delete(key)
     return undefined
   }
 
   return item.value
 }
 
+
 export function cacheSet(
   key: string,
   value: unknown,
-  ttlMs = 300000
+  ttlSeconds = 300
 ) {
-  memory.set(key, {
+  memoryCache.set(key, {
     value,
-    expires: Date.now() + ttlMs
+    expires: Date.now() + ttlSeconds * 1000
   })
+}
+
+
+export function cacheDelete(key: string) {
+  memoryCache.delete(key)
+}
+
+
+export function cacheClear() {
+  memoryCache.clear()
 }
