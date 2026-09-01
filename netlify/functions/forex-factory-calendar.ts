@@ -1,0 +1,2 @@
+import { error,json,rateLimit } from './_shared/http'; import { fetchForexFactory } from './_shared/news'
+export default async(req:Request)=>{if(rateLimit(req,60))return error('Rate limit exceeded',429);try{const data=await fetchForexFactory(false);return json({ok:true,...data})}catch(e:any){return json({ok:false,events:[],stale:true,lastSuccessfulRefresh:null,source:'Forex Factory',directUrl:'https://www.forexfactory.com/calendar',message:'Forex Factory data could not be retrieved and no cached calendar is available.'},503)}}
