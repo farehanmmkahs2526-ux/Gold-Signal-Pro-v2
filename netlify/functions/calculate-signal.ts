@@ -2,10 +2,22 @@ import { z } from 'zod'
 import { error, json, rateLimit } from './_shared/http'
 import { runSignal } from './_shared/signal'
 
-const modeSchema = z.enum(['scalping', 'intraday', 'swing'])
+const modeSchema = z.enum([
+  'scalping',
+  'intraday',
+  'swing'
+])
 
 const tfSchema = z.record(
-  z.enum(['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'Daily']),
+  z.enum([
+    'M1',
+    'M5',
+    'M15',
+    'M30',
+    'H1',
+    'H4',
+    'Daily'
+  ]),
   z.number().min(0).max(100)
 )
 
@@ -14,24 +26,51 @@ const catSchema = z.record(
   z.number().min(0).max(100)
 )
 
-const parseJson = (x: string | null) => x ? JSON.parse(x) : undefined
+const parseJson = (
+  x: string | null
+): unknown =>
+  x ? JSON.parse(x) : undefined
 
-const total = (o: any) =>
-  o ? Object.values(o).reduce((a: any, b: any) => a + Number(b), 0) : 100
 
-export default async (req: Request) => {
-  if (rateLimit(req, 30)) {
-    return error('Rate limit exceeded', 429)
+const total = (
+  o: Record<string, number> | undefined
+): number => {
+
+  if (!o) {
+    return 100
   }
 
+  return Object.values(o)
+    .reduce(
+      (a, b) => a + Number(b),
+      0
+    )
+}
+
+
+export default async (
+  req: Request
+) => {
+
+  if (rateLimit(req, 30)) {
+    return error(
+      'Rate limit exceeded',
+      429
+    )
+  }
+
+
   try {
+
     const u = new URL(req.url)
+
 
     const mode = modeSchema.parse(
       u.searchParams.get('mode') ||
       process.env.DEFAULT_SIGNAL_MODE ||
       'intraday'
     )
+
 
     const rr = Math.max(
       1,
@@ -45,6 +84,7 @@ export default async (req: Request) => {
       )
     )
 
+
     const minConfidence = Math.max(
       75,
       Math.min(
@@ -56,6 +96,7 @@ export default async (req: Request) => {
         )
       )
     )
+
 
     const blackoutMinutes = Math.max(
       0,
@@ -69,78 +110,121 @@ export default async (req: Request) => {
       )
     )
 
+
     const timeframeWeights =
-      tfSchema.optional().parse(
-        parseJson(
-          u.searchParams.get('timeframeWeights')
+      tfSchema
+        .optional()
+        .parse(
+          parseJson(
+            u.searchParams.get(
+              'timeframeWeights'
+            )
+          )
         )
-      )
+
 
     const categoryWeights =
-      catSchema.optional().parse(
-        parseJson(
-          u.searchParams.get('categoryWeights')
+      catSchema
+        .optional()
+        .parse(
+          parseJson(
+            u.searchParams.get(
+              'categoryWeights'
+            )
+          )
         )
-      )
+
 
     if (
       timeframeWeights &&
-      Math.abs(total(timeframeWeights) - 100) > 0.001
+      Math.abs(
+        total(timeframeWeights) - 100
+      ) > 0.001
     ) {
+
       return error(
         'Timeframe weights must total 100%',
         400
       )
+
     }
+
 
     if (
       categoryWeights &&
-      Math.abs(total(categoryWeights) - 100) > 0.001
+      Math.abs(
+        total(categoryWeights) - 100
+      ) > 0.001
     ) {
+
       return error(
         'Strategy-category weights must total 100%',
         400
       )
+
     }
 
-    const result = await runSignal(mode, {
-      riskReward: rr,
-      minConfidence,
-      blackoutMinutes,
-      timeframeWeights,
-      categoryWeights
-    })
+
+    const result = await runSignal(
+      mode,
+      {
+        riskReward: rr,
+        minConfidence,
+        blackoutMinutes,
+        timeframeWeights,
+        categoryWeights
+      }
+    )
+
 
     return json({
       ok: true,
       signal: result.signal,
-      calendarStatus: result.calendarStatus
+      calendarStatus:
+        result.calendarStatus
     })
 
-   } catch (e: unknown) {
 
-    const message =
-      e instanceof Error
-        ? e.message
-        : String(e)
+  } catch (
+    e: unknown
+  ) {
 
-    if (message === 'NOT_CONFIGURED') {
+
+    let message = 'Unknown error'
+
+
+    if (e instanceof Error) {
+      message = e.message
+    }
+    else if (typeof e === 'string') {
+      message = e
+    }
+
+
+    if (
+      message === 'NOT_CONFIGURED'
+    ) {
+
       return json(
         {
-          ok: false,
-          configured: false,
-          signal: null,
+          ok:false,
+          configured:false,
+          signal:null,
           message:
             'Live XAU/USD data is not configured. Add the required API credentials in Netlify Environment Variables.'
         },
         503
       )
+
     }
+
 
     return error(
       'Signal calculation failed',
       500,
       message
     )
+
   }
+
 }
