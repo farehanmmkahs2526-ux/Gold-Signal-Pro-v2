@@ -1,0 +1,3 @@
+import { z } from 'zod'; import { error, json, rateLimit } from './_shared/http'; import { getCandles } from './_shared/market'
+const schema=z.enum(['M1','M5','M15','M30','H1','H4','Daily'])
+export default async(req:Request)=>{if(rateLimit(req,120))return error('Rate limit exceeded',429);try{const tf=schema.parse(new URL(req.url).searchParams.get('timeframe')||'H1');const data=await getCandles(tf,Number(new URL(req.url).searchParams.get('limit')||260));return json({ok:true,...data})}catch(e:any){if(e?.message==='NOT_CONFIGURED')return json({ok:false,configured:false,status:'DISCONNECTED',message:'Live XAU/USD data is not configured. Add the required API credentials in Netlify Environment Variables.'},503);return error('Unable to retrieve market data',502,e?.message)}}
