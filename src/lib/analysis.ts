@@ -167,7 +167,21 @@ export function marketStructure(candles: Candle[]) {
 }
 
 export function fibonacciLevels(candles: Candle[], lookback = 100) {
-  const s = candles.slice(-lookback); if (!s.length) return {}
+  const s = candles.slice(-lookback)
+
+  if (!s.length) {
+    return {
+      fib236: 0,
+      fib382: 0,
+      fib500: 0,
+      fib618: 0,
+      fib786: 0,
+      fib1272: 0,
+      fib1618: 0,
+      swingHigh: 0,
+      swingLow: 0
+    }
+  }
   const hi = Math.max(...s.map(x => x.high)); const lo = Math.min(...s.map(x => x.low)); const range = hi - lo
   return {
     fib236: hi - range * .236, fib382: hi - range * .382, fib500: hi - range * .5, fib618: hi - range * .618, fib786: hi - range * .786,
@@ -278,7 +292,9 @@ function momentumCategory(i: IndicatorSnapshot, candles?:Candle[]) {
 }
 
 function volatilityCategory(candles:Candle[], i:IndicatorSnapshot) {
-  const price=last(candles).close; const atrPct=((i.atr14??0)/price)*100; const width=((i.bbUpper??price)-(i.bbLower??price))/price*100
+  const latest = last(candles)
+if (!latest) return {score:0, reason:'No candles'}
+const price = latest.close const atrPct=((i.atr14??0)/price)*100; const width=((i.bbUpper??price)-(i.bbLower??price))/price*100
   const keltnerSqueeze=i.bbUpper!=null&&i.bbLower!=null&&i.keltnerUpper!=null&&i.keltnerLower!=null&&i.bbUpper<i.keltnerUpper&&i.bbLower>i.keltnerLower
   if(atrPct<0.03 || width<0.08 || keltnerSqueeze) return {score:0,quality:35,reason:'Abnormally low volatility / Bollinger-Keltner squeeze'}
   if(atrPct>1.2) return {score:0,quality:35,reason:'Excessive unstable volatility'}
