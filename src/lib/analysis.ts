@@ -294,7 +294,8 @@ function momentumCategory(i: IndicatorSnapshot, candles?:Candle[]) {
 function volatilityCategory(candles:Candle[], i:IndicatorSnapshot) {
   const latest = last(candles)
 if (!latest) return {score:0, reason:'No candles'}
-const price = latest.close const atrPct=((i.atr14??0)/price)*100; const width=((i.bbUpper??price)-(i.bbLower??price))/price*100
+const price = latest.close;
+const atrPct=((i.atr14??0)/price)*100; const width=((i.bbUpper??price)-(i.bbLower??price))/price*100
   const keltnerSqueeze=i.bbUpper!=null&&i.bbLower!=null&&i.keltnerUpper!=null&&i.keltnerLower!=null&&i.bbUpper<i.keltnerUpper&&i.bbLower>i.keltnerLower
   if(atrPct<0.03 || width<0.08 || keltnerSqueeze) return {score:0,quality:35,reason:'Abnormally low volatility / Bollinger-Keltner squeeze'}
   if(atrPct>1.2) return {score:0,quality:35,reason:'Excessive unstable volatility'}
