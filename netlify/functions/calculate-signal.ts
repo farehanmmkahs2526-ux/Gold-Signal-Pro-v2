@@ -117,11 +117,14 @@ export default async (req: Request) => {
       calendarStatus: result.calendarStatus
     })
 
-  } catch (e: unknown) {
+   } catch (e: unknown) {
 
-    const err = e as Error
+    const message =
+      e instanceof Error
+        ? e.message
+        : String(e)
 
-    if (err?.message === 'NOT_CONFIGURED') {
+    if (message === 'NOT_CONFIGURED') {
       return json(
         {
           ok: false,
@@ -137,7 +140,7 @@ export default async (req: Request) => {
     return error(
       'Signal calculation failed',
       500,
-      err?.message || 'Unknown error'
+      message
     )
   }
 }
