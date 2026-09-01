@@ -3,7 +3,7 @@ const memoryCache = new Map<string, {
   expires: number
 }>()
 
-export function cacheGet(key: string) {
+export function cacheGet<T>(key: string): T | undefined {
   const item = memoryCache.get(key)
 
   if (!item) {
@@ -15,27 +15,29 @@ export function cacheGet(key: string) {
     return undefined
   }
 
-  return item.value
+  return item.value as T
 }
 
 
-export function cacheSet(
+export function cacheSet<T>(
   key: string,
-  value: unknown,
+  value: T,
   ttlSeconds = 300
-) {
+): void {
+
   memoryCache.set(key, {
     value,
     expires: Date.now() + ttlSeconds * 1000
   })
+
 }
 
 
-export function cacheDelete(key: string) {
+export function cacheDelete(key: string): void {
   memoryCache.delete(key)
 }
 
 
-export function cacheClear() {
+export function cacheClear(): void {
   memoryCache.clear()
 }
