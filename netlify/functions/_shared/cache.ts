@@ -1,35 +1,25 @@
-const store = new Map<string, {value:any, expires:number}>()
+const memory = new Map<string, { value: unknown; expires: number }>()
 
-export function getCache<T>(key:string):T|undefined{
-  const item = store.get(key)
+export function cacheGet(key: string) {
+  const item = memory.get(key)
 
-  if(!item) return undefined
+  if (!item) return undefined
 
-  if(Date.now() > item.expires){
-    store.delete(key)
+  if (Date.now() > item.expires) {
+    memory.delete(key)
     return undefined
   }
 
-  return item.value as T
+  return item.value
 }
 
-
-export function setCache<T>(
-  key:string,
-  value:T,
-  ttlMs:number = 300000
-){
-  store.set(key,{
+export function cacheSet(
+  key: string,
+  value: unknown,
+  ttlMs = 300000
+) {
+  memory.set(key, {
     value,
-    expires:Date.now()+ttlMs
+    expires: Date.now() + ttlMs
   })
-}
-
-
-export function clearCache(key?:string){
-  if(key){
-    store.delete(key)
-  }else{
-    store.clear()
-  }
 }
