@@ -293,7 +293,7 @@ function momentumCategory(i: IndicatorSnapshot, candles?:Candle[]) {
 
 function volatilityCategory(candles:Candle[], i:IndicatorSnapshot) {
   const latest = last(candles)
-if (!latest) return {score:0, reason:'No candles'}
+if (!latest) return {score:0, quality:50, reason:'No candles'}
 const price = latest.close;
 const atrPct=((i.atr14??0)/price)*100; const width=((i.bbUpper??price)-(i.bbLower??price))/price*100
   const keltnerSqueeze=i.bbUpper!=null&&i.bbLower!=null&&i.keltnerUpper!=null&&i.keltnerLower!=null&&i.bbUpper<i.keltnerUpper&&i.bbLower>i.keltnerLower
@@ -333,7 +333,7 @@ export function analyseTimeframe(timeframe: Timeframe, candles: Candle[]): Timef
     timeframe,trend:direction,score:Math.round(score),marketStructure:ms.label,emaAlignment:trend.reason,momentum:mom.reason,volatility:vol.reason,
     nearestSupport:lv.nearestSupport,nearestResistance:lv.nearestResistance,lastCompletedCandleTime:last(candles).timestamp,
     reason:`${ms.label}; ${trend.reason}; ${mom.reason}; ${vol.reason}`,
-    indicators:i,patterns,levels:{...fib,...pa.levels},categoryScores:{structure:clamp(ms.score*.75+pa.score*.25,-100,100),trend:trend.score,momentum:mom.score,levels:lv.score,volatilityQuality:vol.quality,session:sess.score,patterns:patternScore,...(i.vwap!=null?{volume:volumeScore}:{})}
+    indicators:i,patterns,levels:{...fib,...pa.levels},categoryScores:{structure:clamp(ms.score*.75+pa.score*.25,-100,100),trend:trend.score,momentum:mom.score,levels:lv.score,volatilityQuality:vol.quality ?? 50,session:sess.score,patterns:patternScore,...(i.vwap!=null?{volume:volumeScore}:{})}
   }
 }
 
