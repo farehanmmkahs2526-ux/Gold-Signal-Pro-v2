@@ -1,0 +1,4 @@
+export async function api<T=any>(path:string,init?:RequestInit):Promise<T>{const r=await fetch(`/api/${path}`,{...init,headers:{'content-type':'application/json',...(init?.headers||{})}});const j=await r.json().catch(()=>({}));if(!r.ok&&j?.configured!==false)throw new Error(j?.error||j?.message||`Request failed (${r.status})`);return j}
+export const fmtPrice=(n:any)=>Number.isFinite(Number(n))?Number(n).toFixed(2):'Unavailable'
+export const myt=(iso?:string|null)=>iso?new Intl.DateTimeFormat('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(new Date(iso))+' MYT':'Unavailable'
+export function urlBase64ToUint8Array(base64String:string){const padding='='.repeat((4-base64String.length%4)%4);const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(base64);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
